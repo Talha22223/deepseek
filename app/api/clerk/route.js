@@ -1,6 +1,7 @@
 import { Webhook } from "svix";
 import connectDB from "@/public/config/db";
 import User from "@/public/models/user";
+import UserSchema from '@/path/to/UserSchema'; // Make sure this import is correct
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 

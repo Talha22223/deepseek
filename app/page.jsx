@@ -8,8 +8,41 @@ import Message from "@/public/components/Message";
 export default function Home() {
   const [expand, setExpand] = useState(false);
   const [messages, setMessages] = useState([]);
-
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleSendMessage = async (message) => {
+    try {
+      // Add user message to chat
+      setMessages(prev => [...prev, { role: 'user', content: message }]);
+      setIsLoading(true);
+
+      // Send message to API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = {};
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get response');
+      }
+
+      // Add AI response to chat
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      // Optionally show error message to user
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
    <div>
@@ -36,11 +69,16 @@ export default function Home() {
     <p className="text-sm mt-2">How can I help you today </p>
     </>
   ) : (
-    <div>
-      <Message role ='user' content ='What is next js'/>
+    <div className="w-full max-w-3xl mt-8 overflow-y-auto">
+      {messages.map((msg, index) => (
+        <Message key={index} role={msg.role} content={msg.content} />
+      ))}
     </div>
   )}
-  <PromptBox isLoading={isLoading} setIsLoading={setIsLoading}/>
+  <PromptBox 
+    onSendMessage={handleSendMessage} 
+    isLoading={isLoading}
+  />
   <p className="text-xs absolute bottom-1 text-gray-500">AI-generated, for reference only</p>
      </div>
 
